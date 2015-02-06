@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Defines message providers (types of message sent) for the PayPal enrolment plugin.
+ * Defines message providers (types of message sent) for the Stripe enrolment plugin.
  *
  * @package    enrol_stripe
  * @copyright  2012 Chris Follin

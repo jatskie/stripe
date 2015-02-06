@@ -15,15 +15,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Listens for Instant Payment Notification from PayPal
+ * Listens for Instant Payment Notification from Stripe
  *
- * This script waits for Payment notification from PayPal,
- * then double checks that data by sending it back to PayPal.
- * If PayPal verifies this then it sets up the enrolment for that
+ * This script waits for Payment notification from Stripe,
+ * then double checks that data by sending it back to Stripe.
+ * If Stripe verifies this then it sets up the enrolment for that
  * user.
  *
  * @package    enrol_stripe
- * @copyright 2010 Eugene Venter
+ * @copyright 2015 Jat Macalalad
  * @author     Eugene Venter - based on code by others
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -38,7 +38,7 @@ require_once($CFG->libdir.'/eventslib.php');
 require_once($CFG->libdir.'/enrollib.php');
 require_once($CFG->libdir . '/filelib.php');
 
-// PayPal does not like when we return error messages here,
+// Stripe does not like when we return error messages here,
 // the custom handler just logs exceptions and stops.
 set_exception_handler('enrol_stripe_ipn_exception_handler');
 
@@ -47,9 +47,9 @@ if (empty($_POST) or !empty($_GET)) {
     print_error("Sorry, you can not use the script that way.");
 }
 
-/// Read all the data from PayPal and get it ready for later;
+/// Read all the data from Stripe and get it ready for later;
 /// we expect only valid UTF-8 encoding, it is the responsibility
-/// of user to set it up properly in PayPal business account,
+/// of user to set it up properly in Stripe business account,
 /// it is documented in docs wiki.
 
 $req = 'cmd=_notify-validate';
@@ -94,7 +94,7 @@ if (! $plugin_instance = $DB->get_record("enrol", array("id"=>$data->instanceid,
 
 $plugin = enrol_get_plugin('stripe');
 
-/// Open a connection back to PayPal to validate the data
+/// Open a connection back to Stripe to validate the data
 $stripeaddr = empty($CFG->usestripesandbox) ? 'www.stripe.com' : 'www.sandbox.stripe.com';
 $c = new curl();
 $options = array(
@@ -106,7 +106,7 @@ $options = array(
 $location = "https://$stripeaddr/cgi-bin/webscr";
 $result = $c->post($location, $req, $options);
 
-if (!$result) {  /// Could not connect to PayPal - FAIL
+if (!$result) {  /// Could not connect to Stripe - FAIL
     echo "<p>Error: could not access stripe.com</p>";
     message_stripe_error_to_admin("Could not access stripe.com to verify payment", $data);
     die;
@@ -148,8 +148,8 @@ if (strlen($result) > 0) {
             $eventdata->name              = 'stripe_enrolment';
             $eventdata->userfrom          = get_admin();
             $eventdata->userto            = $user;
-            $eventdata->subject           = "Moodle: PayPal payment";
-            $eventdata->fullmessage       = "Your PayPal payment is pending.";
+            $eventdata->subject           = "Moodle: Stripe payment";
+            $eventdata->fullmessage       = "Your Stripe payment is pending.";
             $eventdata->fullmessageformat = FORMAT_PLAIN;
             $eventdata->fullmessagehtml   = '';
             $eventdata->smallmessage      = '';

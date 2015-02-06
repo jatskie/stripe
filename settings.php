@@ -18,7 +18,7 @@
  * Paypal enrolments plugin settings and presets.
  *
  * @package    enrol_stripe
- * @copyright  2010 Eugene Venter
+ * @copyright  2015 Jat Macalalad
  * @author     Eugene Venter - based on code by Petr Skoda and others
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

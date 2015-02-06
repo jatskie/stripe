@@ -20,7 +20,7 @@
  * This plugin allows you to set up paid courses.
  *
  * @package    enrol_stripe
- * @copyright  2010 Eugene Venter
+ * @copyright  2015 Jat Macalalad
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -190,8 +190,8 @@ class enrol_stripe_plugin extends enrol_plugin {
             echo '<p>'.get_string('nocost', 'enrol_stripe').'</p>';
         } else {
 
-            // Calculate localised and "." cost, make sure we send PayPal the same value,
-            // please note PayPal expects amount with 2 decimal places and "." separator.
+            // Calculate localised and "." cost, make sure we send Stripe the same value,
+            // please note Stripe expects amount with 2 decimal places and "." separator.
             $localisedcost = format_float($cost, 2, true);
             $cost = format_float($cost, 2, false);
 
@@ -208,7 +208,10 @@ class enrol_stripe_plugin extends enrol_plugin {
                 echo '<p><a href="'.$wwwroot.'/login/">'.get_string('loginsite').'</a></p>';
                 echo '</div>';
             } else {
-                //Sanitise some fields before building the PayPal form
+            	
+            	$PAGE->requires->jquery();
+            	
+                //Sanitise some fields before building the Stripe form
                 $coursefullname  = format_string($course->fullname, true, array('context'=>$context));
                 $courseshortname = $shortname;
                 $userfullname    = fullname($USER);
@@ -219,6 +222,7 @@ class enrol_stripe_plugin extends enrol_plugin {
                 $instancename    = $this->get_instance_name($instance);
 
                 include($CFG->dirroot.'/enrol/stripe/enrol.html');
+                
             }
 
         }

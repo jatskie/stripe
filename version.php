@@ -18,14 +18,14 @@
  * Paypal enrolment plugin version specification.
  *
  * @package    enrol_stripe
- * @copyright  2010 Eugene Venter
- * @author     Eugene Venter
+ * @copyright  2015 Jat Macalalad
+ * @author     Eugene Venter modified by Jat Macalalad
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2014051200;        // The current plugin version (Date: YYYYMMDDXX)
+$plugin->version   = 2015020500;        // The current plugin version (Date: YYYYMMDDXX)
 $plugin->requires  = 2014050800;        // Requires this Moodle version
 $plugin->component = 'enrol_stripe';    // Full name of the plugin (used for diagnostics)
 $plugin->cron      = 60;

@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * PayPal enrolment plugin - support for user self unenrolment.
+ * Stripe enrolment plugin - support for user self unenrolment.
  *
  * @package    enrol_stripe
  * @copyright  2010 Petr Skoda  {@link http://skodak.org}
