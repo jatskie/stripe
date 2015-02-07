@@ -5,18 +5,15 @@
 <p><b><?php echo get_string("cost").": {$instance->currency} {$localisedcost}"; ?></b></p>
 <p><?php print_string("paymentinstant") ?></p>
 
-<form action="/charge" method="POST">
+<form action="" method="POST">
   <script
     src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-    data-key="pk_test_869T2mxWbKK4Gd9YObzgF3K9"
+    data-key='<?php echo "{$instance->stripeapikey}" ?>'
     data-amount='<?php echo "{$instance->currency}"?>'
     data-name="Demo Site"
     data-description='<?php echo "{$instance->currency} {$localisedcost}"?>'
-    data-image="/128x128.png">
+  >
   </script>
 </form>
 
 </div>
-<?php
-var_dump($_POST['stripeToken']);
-?>

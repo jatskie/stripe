@@ -152,6 +152,10 @@ class enrol_stripe_plugin extends enrol_plugin {
 
         ob_start();
 
+        $objPluginConfig =  get_config("enrol_stripe");
+        
+        $instance->stripeapikey = $objPluginConfig->stripeapikey;
+        
         if ($DB->record_exists('user_enrolments', array('userid'=>$USER->id, 'enrolid'=>$instance->id))) {
             return ob_get_clean();
         }
@@ -209,6 +213,7 @@ class enrol_stripe_plugin extends enrol_plugin {
                 echo '</div>';
             } else {
             	
+            	// Add jquery for stripe scripts
             	$PAGE->requires->jquery();
             	
                 //Sanitise some fields before building the Stripe form
@@ -220,7 +225,7 @@ class enrol_stripe_plugin extends enrol_plugin {
                 $useraddress     = $USER->address;
                 $usercity        = $USER->city;
                 $instancename    = $this->get_instance_name($instance);
-
+				
                 include($CFG->dirroot.'/enrol/stripe/enrol.html');
                 
             }
@@ -311,4 +316,10 @@ class enrol_stripe_plugin extends enrol_plugin {
         $this->process_expirations($trace);
         return 0;
     }
+    
+    public function PrintDebug($aArgs)
+    {
+    	echo "<pre>" . print_r( $aArgs ) . "</pre>";
+    }
+    
 }

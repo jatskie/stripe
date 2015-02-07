@@ -32,6 +32,10 @@ if ($ADMIN->fulltree) {
 
     $settings->add(new admin_setting_configtext('enrol_stripe/stripebusiness', get_string('businessemail', 'enrol_stripe'), get_string('businessemail_desc', 'enrol_stripe'), '', PARAM_EMAIL));
 
+    $settings->add(new admin_setting_configtext('enrol_stripe/stripeapikey', get_string('stripe_api_key', 'enrol_stripe'), get_string('stripe_api_key_desc', 'enrol_stripe'), '', PARAM_TEXT));
+    
+    $settings->add(new admin_setting_configtext('enrol_stripe/stripesecretkey', get_string('stripe_secret_key', 'enrol_stripe'), get_string('stripe_secret_key_desc', 'enrol_stripe'), '', PARAM_TEXT));
+    
     $settings->add(new admin_setting_configcheckbox('enrol_stripe/mailstudents', get_string('mailstudents', 'enrol_stripe'), '', 0));
 
     $settings->add(new admin_setting_configcheckbox('enrol_stripe/mailteachers', get_string('mailteachers', 'enrol_stripe'), '', 0));

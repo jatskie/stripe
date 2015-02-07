@@ -25,6 +25,10 @@
 $string['assignrole'] = 'Assign role';
 $string['businessemail'] = 'Stripe business email';
 $string['businessemail_desc'] = 'The email address of your business Stripe account';
+$string['stripe_api_key'] = 'Stripe API Key';
+$string['stripe_api_key_desc'] = 'Publishable API key from your stripe account';
+$string['stripe_secret_key'] = 'Stripe Secret Key';
+$string['stripe_secret_key_desc'] = 'Secret API key from your stripe account';
 $string['cost'] = 'Enrol cost';
 $string['costerror'] = 'The enrolment cost is not numeric';
 $string['costorkey'] = 'Please choose one of the following methods of enrolment.';
