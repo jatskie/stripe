@@ -147,90 +147,129 @@ class enrol_stripe_plugin extends enrol_plugin {
      * @param stdClass $instance
      * @return string html text, usually a form in a text box
      */
-    function enrol_page_hook(stdClass $instance) {
+    function enrol_page_hook(stdClass $instance) 
+    {
         global $CFG, $USER, $OUTPUT, $PAGE, $DB;
 
         ob_start();
-
+        
+        // Retrieve keys from the setting page
         $objPluginConfig =  get_config("enrol_stripe");
-        
         $instance->stripeapikey = $objPluginConfig->stripeapikey;
+        $instance->stripesecretkey =  $objPluginConfig->stripesecretkey;
         
-        if ($DB->record_exists('user_enrolments', array('userid'=>$USER->id, 'enrolid'=>$instance->id))) {
-            return ob_get_clean();
-        }
+		if (isset($_POST) && isset($_POST['stripeToken']))
+		{
+			require_once ('lib/Stripe.php');
 
-        if ($instance->enrolstartdate != 0 && $instance->enrolstartdate > time()) {
-            return ob_get_clean();
-        }
-
-        if ($instance->enrolenddate != 0 && $instance->enrolenddate < time()) {
-            return ob_get_clean();
-        }
-
-        $course = $DB->get_record('course', array('id'=>$instance->courseid));
-        $context = context_course::instance($course->id);
-
-        $shortname = format_string($course->shortname, true, array('context' => $context));
-        $strloginto = get_string("loginto", "", $shortname);
-        $strcourses = get_string("courses");
-
-        // Pass $view=true to filter hidden caps if the user cannot see them
-        if ($users = get_users_by_capability($context, 'moodle/course:update', 'u.*', 'u.id ASC',
-                                             '', '', '', '', false, true)) {
-            $users = sort_by_roleassignment_authority($users, $context);
-            $teacher = array_shift($users);
-        } else {
-            $teacher = false;
-        }
-
-        if ( (float) $instance->cost <= 0 ) {
-            $cost = (float) $this->get_config('cost');
-        } else {
-            $cost = (float) $instance->cost;
-        }
-
-        if (abs($cost) < 0.01) { // no cost, other enrolment methods (instances) should be used
-            echo '<p>'.get_string('nocost', 'enrol_stripe').'</p>';
-        } else {
-
-            // Calculate localised and "." cost, make sure we send Stripe the same value,
-            // please note Stripe expects amount with 2 decimal places and "." separator.
-            $localisedcost = format_float($cost, 2, true);
-            $cost = format_float($cost, 2, false);
-
-            if (isguestuser()) { // force login only for guest user, not real users with guest role
-                if (empty($CFG->loginhttps)) {
-                    $wwwroot = $CFG->wwwroot;
-                } else {
-                    // This actually is not so secure ;-), 'cause we're
-                    // in unencrypted connection...
-                    $wwwroot = str_replace("http://", "https://", $CFG->wwwroot);
-                }
-                echo '<div class="mdl-align"><p>'.get_string('paymentrequired').'</p>';
-                echo '<p><b>'.get_string('cost').": $instance->currency $localisedcost".'</b></p>';
-                echo '<p><a href="'.$wwwroot.'/login/">'.get_string('loginsite').'</a></p>';
-                echo '</div>';
-            } else {
-            	
-            	// Add jquery for stripe scripts
-            	$PAGE->requires->jquery();
-            	
-                //Sanitise some fields before building the Stripe form
-                $coursefullname  = format_string($course->fullname, true, array('context'=>$context));
-                $courseshortname = $shortname;
-                $userfullname    = fullname($USER);
-                $userfirstname   = $USER->firstname;
-                $userlastname    = $USER->lastname;
-                $useraddress     = $USER->address;
-                $usercity        = $USER->city;
-                $instancename    = $this->get_instance_name($instance);
+			// Set your secret key: remember to change this to your live secret key in production
+			// See your keys here https://dashboard.stripe.com/account
+			Stripe::setApiKey($instance->stripesecretkey);
+			
+			// Get the credit card details submitted by the form
+			$strToken = $_POST['stripeToken'];
+			$strEmail = $_POST['stripeEmail'];
+			// COnvert cost to cents
+			$intAmount = $instance->cost * 100; 
+			
+			// Create the charge on Stripe's servers - this will charge the user's card
+			//$intAmount =  
+			try {
+				$objCharge = Stripe_Charge::create(array(
+						"amount" 		=> $intAmount, // amount in cents, again
+						"currency" 		=> $instance->currency,
+						"card" 			=> $strToken,
+						"description" 	=> $strEmail
+					)
+				);
+			} catch(Stripe_CardError $e) {
+				// The card has been declined
+			}
+			
+			if( ! empty ($objCharge) )
+			{
 				
-                include($CFG->dirroot.'/enrol/stripe/enrol.html');
-                
-            }
-
-        }
+				
+			}
+		}
+		else
+		{   
+	        if ($DB->record_exists('user_enrolments', array('userid'=>$USER->id, 'enrolid'=>$instance->id))) {
+	            return ob_get_clean();
+	        }
+	
+	        if ($instance->enrolstartdate != 0 && $instance->enrolstartdate > time()) {
+	            return ob_get_clean();
+	        }
+	
+	        if ($instance->enrolenddate != 0 && $instance->enrolenddate < time()) {
+	            return ob_get_clean();
+	        }
+	
+	        $course = $DB->get_record('course', array('id'=>$instance->courseid));
+	        $context = context_course::instance($course->id);
+	
+	        $shortname = format_string($course->shortname, true, array('context' => $context));
+	        $strloginto = get_string("loginto", "", $shortname);
+	        $strcourses = get_string("courses");
+	
+	        // Pass $view=true to filter hidden caps if the user cannot see them
+	        if ($users = get_users_by_capability($context, 'moodle/course:update', 'u.*', 'u.id ASC',
+	                                             '', '', '', '', false, true)) {
+	            $users = sort_by_roleassignment_authority($users, $context);
+	            $teacher = array_shift($users);
+	        } else {
+	            $teacher = false;
+	        }
+	
+	        if ( (float) $instance->cost <= 0 ) {
+	            $cost = (float) $this->get_config('cost');
+	        } else {
+	            $cost = (float) $instance->cost;
+	        }
+	
+	        if (abs($cost) < 0.01) { // no cost, other enrolment methods (instances) should be used
+	            echo '<p>'.get_string('nocost', 'enrol_stripe').'</p>';
+	        } else {
+	
+	            // Calculate localised and "." cost, make sure we send Stripe the same value,
+	            // please note Stripe expects amount with 2 decimal places and "." separator.
+	            $localisedcost = format_float($cost, 2, true);
+	            $cost = format_float($cost, 2, false);
+	
+	            if (isguestuser()) { // force login only for guest user, not real users with guest role
+	                if (empty($CFG->loginhttps)) {
+	                    $wwwroot = $CFG->wwwroot;
+	                } else {
+	                    // This actually is not so secure ;-), 'cause we're
+	                    // in unencrypted connection...
+	                    $wwwroot = str_replace("http://", "https://", $CFG->wwwroot);
+	                }
+	                echo '<div class="mdl-align"><p>'.get_string('paymentrequired').'</p>';
+	                echo '<p><b>'.get_string('cost').": $instance->currency $localisedcost".'</b></p>';
+	                echo '<p><a href="'.$wwwroot.'/login/">'.get_string('loginsite').'</a></p>';
+	                echo '</div>';
+	            } else {
+	            	
+	            	// Add jquery for stripe scripts
+	            	$PAGE->requires->jquery();
+	            	
+	                //Sanitise some fields before building the Stripe form
+	                $coursefullname  = format_string($course->fullname, true, array('context'=>$context));
+	                $courseshortname = $shortname;
+	                $userfullname    = fullname($USER);
+	                $userfirstname   = $USER->firstname;
+	                $userlastname    = $USER->lastname;
+	                $useraddress     = $USER->address;
+	                $usercity        = $USER->city;
+	                $instancename    = $this->get_instance_name($instance);
+					
+	                include($CFG->dirroot.'/enrol/stripe/enrol.html');
+	                
+	            }
+	
+	        }
+		}
 
         return $OUTPUT->box(ob_get_clean());
     }
