@@ -157,18 +157,19 @@ class enrol_stripe_plugin extends enrol_plugin {
         $objPluginConfig =  get_config("enrol_stripe");
         $instance->stripeapikey = $objPluginConfig->stripeapikey;
         $instance->stripesecretkey =  $objPluginConfig->stripesecretkey;
-
-		if (isset($_POST) && isset($_POST['stripeToken']))
+		$strStripeToken = optional_param('stripeToken', false, PARAM_TEXT);
+		
+		if (false != $strStripeToken)
 		{
-			require_once ('lib/Stripe.php');
+			require_once ($CFG->dirroot . '/enrol/stripe/lib/Stripe.php');
 
 			// Set your secret key: remember to change this to your live secret key in production
 			// See your keys here https://dashboard.stripe.com/account
 			Stripe::setApiKey($instance->stripesecretkey);
 			
 			// Get the credit card details submitted by the form
-			$strToken = $_POST['stripeToken'];
-			$strEmail = $_POST['stripeEmail'];
+			$strStripeEmail = required_param('stripeEmail', PARAM_EMAIL);
+			
 			// COnvert cost to cents
 			$intAmount = $instance->cost * 100; 
 			
@@ -179,12 +180,13 @@ class enrol_stripe_plugin extends enrol_plugin {
 				$objCharge = Stripe_Charge::create(array(
 						"amount" 		=> $intAmount, // amount in cents, again
 						"currency" 		=> $instance->currency,
-						"card" 			=> $strToken,
-						"description" 	=> $strEmail
+						"card" 			=> $strStripeToken,
+						"description" 	=> $strStripeEmail
 					)
 				);
 			} catch(Stripe_CardError $e) {
 				// The card has been declined
+				echo '<div class="alert alert-error">'. $e->getMessage() .'</div>';
 			}
 			
 			if( ! empty ($objCharge) )
