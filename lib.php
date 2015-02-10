@@ -149,7 +149,7 @@ class enrol_stripe_plugin extends enrol_plugin {
      */
     function enrol_page_hook(stdClass $instance) 
     {
-        global $CFG, $USER, $OUTPUT, $PAGE, $DB;
+        global $CFG, $USER, $OUTPUT, $PAGE, $DB, $COURSE;
 
         ob_start();
         
@@ -157,7 +157,7 @@ class enrol_stripe_plugin extends enrol_plugin {
         $objPluginConfig =  get_config("enrol_stripe");
         $instance->stripeapikey = $objPluginConfig->stripeapikey;
         $instance->stripesecretkey =  $objPluginConfig->stripesecretkey;
-        
+
 		if (isset($_POST) && isset($_POST['stripeToken']))
 		{
 			require_once ('lib/Stripe.php');
@@ -174,6 +174,7 @@ class enrol_stripe_plugin extends enrol_plugin {
 			
 			// Create the charge on Stripe's servers - this will charge the user's card
 			//$intAmount =  
+			
 			try {
 				$objCharge = Stripe_Charge::create(array(
 						"amount" 		=> $intAmount, // amount in cents, again
@@ -188,8 +189,82 @@ class enrol_stripe_plugin extends enrol_plugin {
 			
 			if( ! empty ($objCharge) )
 			{
+				$plugin = enrol_get_plugin('stripe');
+				
+				if ($instance->enrolperiod) {
+					$timestart = time();
+					$timeend   = $timestart + $instance->enrolperiod;
+				} else {
+					$timestart = 0;
+					$timeend   = 0;
+				}
+				
+				// Enrol user
+				$plugin->enrol_user($instance, $USER->id, $instance->roleid, $timestart, $timeend);
+				
+				$mailstudents = $plugin->get_config('mailstudents');
+				$mailteachers = $plugin->get_config('mailteachers');
+				$mailadmins   = $plugin->get_config('mailadmins');
+				$shortname = format_string($COURSE->shortname, true, array('context' => $context));
 				
 				
+				if (!empty($mailstudents)) {
+					$a = new stdClass();
+					$a->coursename = format_string($COURSE->fullname, true, array('context' => $coursecontext));
+					$a->profileurl = "$CFG->wwwroot/user/view.php?id=$user->id";
+				
+					$eventdata = new stdClass();
+					$eventdata->modulename        = 'moodle';
+					$eventdata->component         = 'enrol_stripe';
+					$eventdata->name              = 'stripe_enrolment';
+					$eventdata->userfrom          = empty($teacher) ? core_user::get_support_user() : $teacher;
+					$eventdata->userto            = $user;
+					$eventdata->subject           = get_string("enrolmentnew", 'enrol', $shortname);
+					$eventdata->fullmessage       = get_string('welcometocoursetext', '', $a);
+					$eventdata->fullmessageformat = FORMAT_PLAIN;
+					$eventdata->fullmessagehtml   = '';
+					$eventdata->smallmessage      = '';
+					message_send($eventdata);
+				
+				}
+				
+				if (!empty($mailteachers) && !empty($teacher)) {
+					$a->course = format_string($COURSE->fullname, true, array('context' => $coursecontext));
+					$a->user = fullname($user);
+				
+					$eventdata = new stdClass();
+					$eventdata->modulename        = 'moodle';
+					$eventdata->component         = 'enrol_stripe';
+					$eventdata->name              = 'stripe_enrolment';
+					$eventdata->userfrom          = $user;
+					$eventdata->userto            = $teacher;
+					$eventdata->subject           = get_string("enrolmentnew", 'enrol', $shortname);
+					$eventdata->fullmessage       = get_string('enrolmentnewuser', 'enrol', $a);
+					$eventdata->fullmessageformat = FORMAT_PLAIN;
+					$eventdata->fullmessagehtml   = '';
+					$eventdata->smallmessage      = '';
+					message_send($eventdata);
+				}
+				
+				if (!empty($mailadmins)) {
+					$a->course = format_string($COURSE->fullname, true, array('context' => $coursecontext));
+					$a->user = fullname($user);
+					$admins = get_admins();
+					foreach ($admins as $admin) {
+						$eventdata = new stdClass();
+						$eventdata->modulename        = 'moodle';
+						$eventdata->component         = 'enrol_stripe';
+						$eventdata->name              = 'stripe_enrolment';
+						$eventdata->userfrom          = $user;
+						$eventdata->userto            = $admin;
+						$eventdata->subject           = get_string("enrolmentnew", 'enrol', $shortname);
+						$eventdata->fullmessage       = get_string('enrolmentnewuser', 'enrol', $a);
+						$eventdata->fullmessageformat = FORMAT_PLAIN;
+						$eventdata->fullmessagehtml   = '';
+						$eventdata->smallmessage      = '';
+						message_send($eventdata);
+					}
+				}
 			}
 		}
 		else
