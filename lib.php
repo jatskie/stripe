@@ -213,14 +213,14 @@ class enrol_stripe_plugin extends enrol_plugin {
 				if (!empty($mailstudents)) {
 					$a = new stdClass();
 					$a->coursename = format_string($COURSE->fullname, true, array('context' => $coursecontext));
-					$a->profileurl = "$CFG->wwwroot/user/view.php?id=$user->id";
+					$a->profileurl = "$CFG->wwwroot/user/view.php?id=$USER->id";
 				
 					$eventdata = new stdClass();
 					$eventdata->modulename        = 'moodle';
 					$eventdata->component         = 'enrol_stripe';
 					$eventdata->name              = 'stripe_enrolment';
 					$eventdata->userfrom          = empty($teacher) ? core_user::get_support_user() : $teacher;
-					$eventdata->userto            = $user;
+					$eventdata->userto            = $USER;
 					$eventdata->subject           = get_string("enrolmentnew", 'enrol', $shortname);
 					$eventdata->fullmessage       = get_string('welcometocoursetext', '', $a);
 					$eventdata->fullmessageformat = FORMAT_PLAIN;
@@ -232,13 +232,13 @@ class enrol_stripe_plugin extends enrol_plugin {
 				
 				if (!empty($mailteachers) && !empty($teacher)) {
 					$a->course = format_string($COURSE->fullname, true, array('context' => $coursecontext));
-					$a->user = fullname($user);
+					$a->user = fullname($USER);
 				
 					$eventdata = new stdClass();
 					$eventdata->modulename        = 'moodle';
 					$eventdata->component         = 'enrol_stripe';
 					$eventdata->name              = 'stripe_enrolment';
-					$eventdata->userfrom          = $user;
+					$eventdata->userfrom          = $USER;
 					$eventdata->userto            = $teacher;
 					$eventdata->subject           = get_string("enrolmentnew", 'enrol', $shortname);
 					$eventdata->fullmessage       = get_string('enrolmentnewuser', 'enrol', $a);
@@ -250,14 +250,14 @@ class enrol_stripe_plugin extends enrol_plugin {
 				
 				if (!empty($mailadmins)) {
 					$a->course = format_string($COURSE->fullname, true, array('context' => $coursecontext));
-					$a->user = fullname($user);
+					$a->user = fullname($USER);
 					$admins = get_admins();
 					foreach ($admins as $admin) {
 						$eventdata = new stdClass();
 						$eventdata->modulename        = 'moodle';
 						$eventdata->component         = 'enrol_stripe';
 						$eventdata->name              = 'stripe_enrolment';
-						$eventdata->userfrom          = $user;
+						$eventdata->userfrom          = $USER;
 						$eventdata->userto            = $admin;
 						$eventdata->subject           = get_string("enrolmentnew", 'enrol', $shortname);
 						$eventdata->fullmessage       = get_string('enrolmentnewuser', 'enrol', $a);
