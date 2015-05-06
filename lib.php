@@ -440,21 +440,6 @@ class enrol_stripe_plugin extends enrol_plugin {
     	echo "<pre>" . print_r( $aArgs ) . "</pre>";
     }
     
-    public static function get_course_groups()
-    {
-    	global $COURSE;
-    	
-    	$arrGroups = groups_get_all_groups($COURSE->id);
-    	$arrReturn = array();
-    	
-    	foreach ($arrGroups as $objGroups)
-    	{
-    		$arrReturn[$objGroups->id] = $objGroups->name;
-    	}
-    	
-    	return $arrReturn;
-    }
-    
     public function can_delete_instance($instance) 
     {
     	$context = context_course::instance($instance->courseid);

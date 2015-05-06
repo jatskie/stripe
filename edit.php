@@ -77,7 +77,14 @@ if ($mform->is_cancelled()) {
         $instance->enrolenddate   = $data->enrolenddate;
         $instance->timemodified   = time();
         $DB->update_record('enrol', $instance);
-
+        
+        $objGroupData = new stdClass();
+        $objGroupData->id = $instance->customint1;
+        $objGroupData->courseid = $courseid;
+        $objGroupData->name = $data->name;
+        
+        groups_update_group($objGroupData);
+        
         if ($reset) {
             $context->mark_dirty();
         }
