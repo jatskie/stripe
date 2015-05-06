@@ -30,6 +30,8 @@ require_once($CFG->libdir.'/formslib.php');
 class enrol_stripe_edit_form extends moodleform {
 
     function definition() {
+    	global $COURSE;
+    	
         $mform = $this->_form;
 
         list($instance, $plugin, $context) = $this->_customdata;
@@ -57,9 +59,14 @@ class enrol_stripe_edit_form extends moodleform {
         } else {
             $roles = get_default_enrol_roles($context, $plugin->get_config('roleid'));
         }
+        
+        $groups = enrol_stripe_plugin::get_course_groups();                
+        
         $mform->addElement('select', 'roleid', get_string('assignrole', 'enrol_stripe'), $roles);
         $mform->setDefault('roleid', $plugin->get_config('roleid'));
-
+        
+        //$mform->addElement('select', 'groupid', get_string('assigngroup', 'enrol_stripe'), $groups);
+        //$mform->setDefault('roleid', $plugin->get_config('roleid'));
 
         $mform->addElement('duration', 'enrolperiod', get_string('enrolperiod', 'enrol_stripe'), array('optional' => true, 'defaultunit' => 86400));
         $mform->setDefault('enrolperiod', $plugin->get_config('enrolperiod'));

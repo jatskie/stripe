@@ -21,7 +21,7 @@
  * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
+$string['assigngroup'] = 'Assign group';
 $string['assignrole'] = 'Assign role';
 $string['businessemail'] = 'Stripe business email';
 $string['businessemail_desc'] = 'The email address of your business Stripe account';

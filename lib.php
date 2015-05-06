@@ -27,9 +27,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Paypal enrolment plugin implementation.
- * @author  Eugene Venter - based on code by Martin Dougiamas and others
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * Stripe enrolment plugin implementation. 
  */
 class enrol_stripe_plugin extends enrol_plugin {
 
@@ -201,8 +199,12 @@ class enrol_stripe_plugin extends enrol_plugin {
 					$timeend   = 0;
 				}
 				
+				require_once($CFG->dirroot. '/group/lib.php');
+								
 				// Enrol user
-				$plugin->enrol_user($instance, $USER->id, $instance->roleid, $timestart, $timeend);
+				$plugin->enrol_user($instance, $USER->id, $instance->roleid, $timestart, $timeend);				
+				
+				$boolGroupMembership = groups_add_member(intval($instance->customint1), $USER->id); 				
 				
 				$mailstudents = $plugin->get_config('mailstudents');
 				$mailteachers = $plugin->get_config('mailteachers');
@@ -436,6 +438,33 @@ class enrol_stripe_plugin extends enrol_plugin {
     public function PrintDebug($aArgs)
     {
     	echo "<pre>" . print_r( $aArgs ) . "</pre>";
+    }
+    
+    public static function get_course_groups()
+    {
+    	global $COURSE;
+    	
+    	$arrGroups = groups_get_all_groups($COURSE->id);
+    	$arrReturn = array();
+    	
+    	foreach ($arrGroups as $objGroups)
+    	{
+    		$arrReturn[$objGroups->id] = $objGroups->name;
+    	}
+    	
+    	return $arrReturn;
+    }
+    
+    public function can_delete_instance($instance) 
+    {
+    	$context = context_course::instance($instance->courseid);
+    	return has_capability('enrol/stripe:config', $context);
+    }
+    
+    public function can_hide_show_instance($instance) 
+    {
+    	$context = context_course::instance($instance->courseid);
+    	return has_capability('enrol/stripe:config', $context);
     }
     
 }

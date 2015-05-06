@@ -25,6 +25,7 @@
 
 require('../../config.php');
 require_once('edit_form.php');
+require_once($CFG->dirroot.'/group/lib.php');
 
 $courseid   = required_param('courseid', PARAM_INT);
 $instanceid = optional_param('id', 0, PARAM_INT); // instanceid
@@ -70,7 +71,7 @@ if ($mform->is_cancelled()) {
         $instance->name           = $data->name;
         $instance->cost           = unformat_float($data->cost);
         $instance->currency       = $data->currency;
-        $instance->roleid         = $data->roleid;
+        $instance->roleid         = $data->roleid;        
         $instance->enrolperiod    = $data->enrolperiod;
         $instance->enrolstartdate = $data->enrolstartdate;
         $instance->enrolenddate   = $data->enrolenddate;
@@ -87,10 +88,20 @@ if ($mform->is_cancelled()) {
         		'name' 			=> $data->name, 
         		'cost' 			=> unformat_float($data->cost), 
         		'currency' 		=> $data->currency, 
-        		'roleid' 		=> $data->roleid,
+        		'roleid' 		=> $data->roleid,        		
                 'enrolperiod' 	=> $data->enrolperiod, 
         		'enrolstartdate'=> $data->enrolstartdate, 
-        		'enrolenddate' 	=> $data->enrolenddate);
+        		'enrolenddate' 	=> $data->enrolenddate        	
+        );
+        
+        $objGroupData = new stdClass();
+        $objGroupData->courseid = $courseid;
+        $objGroupData->name = $data->name;
+                        
+        $intGroupId = groups_create_group($objGroupData);
+        
+        $fields['customint1'] = $intGroupId;        
+        
         $plugin->add_instance($course, $fields);
     }
 
